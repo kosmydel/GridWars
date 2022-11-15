@@ -1,6 +1,5 @@
 package gridwars.starter;
 
-import cern.ais.gridwars.StdOutputSwitcher;
 import cern.ais.gridwars.api.Coordinates;
 import cern.ais.gridwars.api.UniverseView;
 import cern.ais.gridwars.api.bot.PlayerBot;
@@ -8,76 +7,38 @@ import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class SquirrelBot implements PlayerBot {
 
     Coordinates startingPosition = null;
-    Random r = new Random();
-
-    int[][] arr = new int[50][50];
-    int currentTurn = 1;
 
     public void getNextCommands(UniverseView universeView, List<MovementCommand> commandList) {
-        try {
-            List<Coordinates> myCells = universeView.getMyCells();
+        List<Coordinates> myCells = universeView.getMyCells();
 
-            if(startingPosition == null) {
-                startingPosition = myCells.get(0);
-            }
-
-            for (Coordinates cell : myCells) {
-                int currentPopulation = universeView.getPopulation(cell);
-
-                if(currentPopulation <= 5) {
-                    continue;
-                }
-
-                List<MovementCommand.Direction> okDirections = new ArrayList<>();
-                int currentArrVal = arr[cell.getX()][cell.getY()];
-
-                for(MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-                    Coordinates neighbour = cell.getNeighbour(dir);
-                    int arrVal = arr[neighbour.getX()][neighbour.getY()];
-                    if(arrVal == 0 || arrVal > currentArrVal) {
-                        okDirections.add(dir);
-                    }
-                }
-
-                if(okDirections.size() == 0) continue;
-                int toMovePopulation = currentPopulation - 5;
-                for(int i = 0; i < okDirections.size(); i++) {
-                    MovementCommand.Direction dir = okDirections.get(i);
-                    int neighboursPopulation = universeView.getPopulation(cell.getNeighbour(dir));
-
-                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - i), 100 - neighboursPopulation);
-
-                    if(movePopulation > 0) {
-                        toMovePopulation -= movePopulation;
-
-                        move(commandList, cell, dir, movePopulation);
-                    }
-
-                }
-
-            }
-
-            currentTurn++;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        if(startingPosition == null) {
+            startingPosition = myCells.get(0);
         }
 
-    }
+        for (Coordinates cell : myCells) {
+            int currentPopulation = universeView.getPopulation(cell);
+            currentPopulation -= 5;
 
-    public void move(List<MovementCommand> commandList, Coordinates cell, MovementCommand.Direction direction, int population) {
-        commandList.add(new MovementCommand(cell, direction, population));
-        if(arr[cell.getX()][cell.getY()] == 0) {
-            arr[cell.getX()][cell.getY()] = currentTurn;
+            List<MovementCommand.Direction> outerDirections = getOuterDirection(cell);
+
+            outerDirections = outerDirections.stream().filter(direction -> universeView.getPopulation(cell.getNeighbour(direction)) < 20).collect(Collectors.toList());
+
+
+            if(currentPopulation / (outerDirections.size()) >= 5) {
+                for (MovementCommand.Direction direction : outerDirections) {
+                    commandList.add(new MovementCommand(cell, direction, currentPopulation / (outerDirections.size() + 1)));
+                }
+            }
+
         }
     }
 

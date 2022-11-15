@@ -7,6 +7,9 @@ import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.*;
 
+import gridwars.starter.Util;
+//Util.getExpansionDirections(universeView, cell);
+
 
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
@@ -137,22 +140,5 @@ public class GluttonBot implements PlayerBot {
         }
     }
 
-    public List<MovementCommand.Direction> getExpansionDirectories(UniverseView universeView, Coordinates cell) {
-        List<MovementCommand.Direction> expansionDirections = new ArrayList<>();
-        for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-            Coordinates neighbour = cell.getNeighbour(dir);
-            boolean isMine = universeView.belongsToMe(neighbour);
-            boolean isEmpty = universeView.isEmpty(neighbour);
-            if(isEmpty) {
-                expansionDirections.add(dir);
-            }
-        }
-        return expansionDirections;
-    }
 
-
-
-    public boolean isOnEdge(UniverseView universeView, Coordinates cell) {
-        return getExpansionDirectories(universeView, cell).size() == 0;
-    }
 }

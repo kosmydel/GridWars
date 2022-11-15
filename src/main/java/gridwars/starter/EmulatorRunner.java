@@ -9,6 +9,6 @@ import cern.ais.gridwars.Emulator;
 public class EmulatorRunner {
 
     public static void main(String[] args) {
-        Emulator.playMatch(new GluttonBot(), new GluttonBot2());
+        Emulator.playMatch(new GluttonBot(), new GluttonBot());
     }
 }

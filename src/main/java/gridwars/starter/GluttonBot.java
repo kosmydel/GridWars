@@ -7,6 +7,7 @@ import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -31,6 +32,8 @@ public class GluttonBot implements PlayerBot {
                 startingPosition = myCells.get(0);
             }
 
+            currentTurn = universeView.getCurrentTurn();
+
             for (Coordinates cell : myCells) {
                 int currentPopulation = universeView.getPopulation(cell);
 
@@ -49,25 +52,37 @@ public class GluttonBot implements PlayerBot {
                     }
                 }
 
+                Collections.shuffle(okDirections);
+
                 if(okDirections.size() == 0) continue;
-                int toMovePopulation = currentPopulation - 5;
-                for(int i = 0; i < okDirections.size(); i++) {
-                    MovementCommand.Direction dir = okDirections.get(i);
-                    int neighboursPopulation = universeView.getPopulation(cell.getNeighbour(dir));
 
-                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - i), 100 - neighboursPopulation);
-
-                    if(movePopulation > 0) {
-                        toMovePopulation -= movePopulation;
-
-                        move(commandList, cell, dir, movePopulation);
-                    }
-
+                if(currentArrVal > 0 && currentTurn - currentArrVal > 20) {
+                    continue;
                 }
 
-            }
+                int toMovePopulation = currentPopulation - Math.max(5, (int) (Math.sqrt((double) currentTurn / 10)));
+                boolean doneSomething = true;
+                while (toMovePopulation > 0 && doneSomething)
+                {
+                    doneSomething = false;
+                    for(int i = 0; i < okDirections.size(); i++) {
+                        MovementCommand.Direction dir = okDirections.get(i);
+                        Coordinates neighbour = cell.getNeighbour(dir);
+                        boolean isMine = universeView.belongsToMe(neighbour);
+                        boolean isEmpty = universeView.isEmpty(neighbour);
 
-            currentTurn++;
+                        int neighboursPopulation = (isMine || isEmpty) ? universeView.getPopulation(neighbour) : 0;
+
+                        int movePopulation = Math.min(toMovePopulation / (okDirections.size() - i), 100 - neighboursPopulation);
+
+                        if(movePopulation > 0) {
+                            toMovePopulation -= movePopulation;
+                            doneSomething = true;
+                            move(commandList, cell, dir, movePopulation);
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

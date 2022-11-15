@@ -22,11 +22,9 @@ public class GluttonBot implements PlayerBot {
     public void getNextCommands(UniverseView universeView, List<MovementCommand> commandList) {
         currentTurn = universeView.getCurrentTurn();
         try {
-//            if (currentTurn % 200 > 100) {
-//                strategy1(universeView, commandList);
-//            }else {
-                strategy2(universeView, commandList);
-//            }
+            if(currentTurn % 100 < 90) {
+                strategy1(universeView, commandList);
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -74,10 +72,6 @@ public class GluttonBot implements PlayerBot {
             Collections.shuffle(okDirections);
 
             if (okDirections.size() == 0) continue;
-
-//                if(currentArrVal > 0 && currentTurn - currentArrVal > 20) {
-//                    continue;
-//                }
 
             int toMovePopulation = currentPopulation - Math.max(5, (int) (Math.sqrt((double) currentTurn / 4)));
             boolean doneSomething = true;
@@ -141,5 +135,24 @@ public class GluttonBot implements PlayerBot {
                 }
             }
         }
+    }
+
+    public List<MovementCommand.Direction> getExpansionDirectories(UniverseView universeView, Coordinates cell) {
+        List<MovementCommand.Direction> expansionDirections = new ArrayList<>();
+        for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+            Coordinates neighbour = cell.getNeighbour(dir);
+            boolean isMine = universeView.belongsToMe(neighbour);
+            boolean isEmpty = universeView.isEmpty(neighbour);
+            if(isEmpty) {
+                expansionDirections.add(dir);
+            }
+        }
+        return expansionDirections;
+    }
+
+
+
+    public boolean isOnEdge(UniverseView universeView, Coordinates cell) {
+        return getExpansionDirectories(universeView, cell).size() == 0;
     }
 }

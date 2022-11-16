@@ -6,8 +6,6 @@ import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.*;
-
-import gridwars.starter.Util;
 //Util.getExpansionDirections(universeView, cell);
 
 

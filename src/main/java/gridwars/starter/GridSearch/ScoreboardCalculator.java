@@ -15,12 +15,13 @@ public class ScoreboardCalculator {
     public static void main(String[] args) {
 
         List<Supplier<? extends PlayerBot>> list = List.of(
-                GluttonBot4::new,
                 GluttonBot::new,
-                GluttonBot2::new,
-                GluttonBot3::new,
-                iFABot::new,
-                MovingBot::new);
+                GluttonBotPRO::new,
+                GluttonBot_WorkingGravity6::new,
+                GluttonBot_WorkingGravity5::new,
+                GluttonBot_WorkingGravity4::new,
+                iFABot::new
+        );
         PlayBotsScoreboard(list, 3);
     }
     static class ParalellResult{

@@ -7,14 +7,11 @@ import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.*;
 
-import gridwars.starter.Util;
-//Util.getExpansionDirections(universeView, cell);
-
 
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBot_WorkingGravity1 implements PlayerBot {
     Coordinates startingPosition = null;
     Random r = new Random();
 
@@ -209,15 +206,6 @@ public class GluttonBot implements PlayerBot {
                 }
             }
         }
-
-        for(int i = 0; i < 50; i++) {
-            for(int j = 0; j < 50; j++) {
-                int population = universeView.getPopulation(universeView.getCoordinates(i, j));
-                if(population > 80) {
-                    gravity[i][j] += 1;
-                }
-            }
-        }
     }
 
 
@@ -225,5 +213,4 @@ public class GluttonBot implements PlayerBot {
     public boolean isOnEdge(UniverseView universeView, Coordinates cell) {
         return getExpansionDirectories(universeView, cell).size() == 0;
     }
-
 }

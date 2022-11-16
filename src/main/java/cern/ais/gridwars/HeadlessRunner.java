@@ -7,7 +7,12 @@ import java.util.List;
 
 public class HeadlessRunner {
 
-    public static int runGame(PlayerBot blueBot, PlayerBot redBot, String blueBotLog, String redBotLog)
+    public enum GAME_RESULT {
+        RED_WON,
+        BLUE_WON,
+        DRAW
+    }
+    public static GAME_RESULT runGame(PlayerBot blueBot, PlayerBot redBot, String blueBotLog, String redBotLog)
     {
         List<Player> playerList = Arrays.asList(
                 new Player(0, blueBot,new FileLogger(blueBotLog)),
@@ -21,12 +26,12 @@ public class HeadlessRunner {
         Player player =  game.getWinner();
         if(player == null)
         {
-            return 0;
+            return GAME_RESULT.DRAW;
         }
         if(player.getId() == 0)
         {
-            return 1;
+            return GAME_RESULT.BLUE_WON;
         }
-        return -1;
+        return GAME_RESULT.RED_WON;
     }
 }

@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBotPRO3 implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -174,11 +174,10 @@ public class GluttonBot implements PlayerBot {
 
             for(int j = 0; j < i; j++) {
                 Coordinates neighbour = cell.getNeighbour(directions.get(0));
+                int currentNeighbourPopulation = universeView.getPopulation(neighbour);
 
                 int neighbourPopulation = universeView.getPopulation(neighbour);
-                // TODO: tutaj jakos mozna jeszcze poprawic, np na srodku zeby nie zostawalo po malo jednostek tylko po wiecej
-                int toMove = Math.min(currentPopulation / (i + DENOMINATOR_VALUE),
-                        (enemiesAmount[x][y] > 0 ? 200 : 100) - neighbourPopulation - movedPopulation[neighbour.getX()][neighbour.getY()]);
+                int toMove = Math.min(currentPopulation / (i + DENOMINATOR_VALUE), 101 - neighbourPopulation - movedPopulation[neighbour.getX()][neighbour.getY()]);
 
                 move(commandList, cell, directions.get(0), toMove);
                 directions.remove(0);

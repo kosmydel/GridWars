@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBotPRO2 implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -27,22 +27,17 @@ public class GluttonBot implements PlayerBot {
 
     int[][] universe = new int[50][50];
 
-    int[][] movedPopulation = new int[50][50];
-
     private static final int STRATEGY_CHANGE = 80;
     private static int DENOMINATOR_VALUE = 1;
     Random r = new Random(42);
-    UniverseView universeView;
 
     public void getNextCommands(UniverseView universeView, List<MovementCommand> commandList) {
         try {
             long t0 = System.currentTimeMillis();
-            this.universeView = universeView;
             currentTurn = universeView.getCurrentTurn();
             generateNeighboursAmount(universeView);
             generateEnemiesAmount(universeView);
             generateGravityMap(universeView);
-            movedPopulation = new int[50][50];
 
             if (startingPosition == null) {
                 startingPosition = universeView.getMyCells().get(0);
@@ -85,20 +80,11 @@ public class GluttonBot implements PlayerBot {
     }
 
     public void move(List<MovementCommand> commandList, Coordinates cell, MovementCommand.Direction direction, int population) {
-        if(population <= 0) {
-            return;
-        }
-        int x = cell.getX();
-        int y = cell.getY();
-        Coordinates neighbour = universeView.getCoordinates(x, y).getNeighbour(direction);
-
-        movedPopulation[neighbour.getX()][neighbour.getY()] += population;
-        movedPopulation[x][y] -= population;
-        if(firstComeFrom[x][y] == 0) {
-            firstComeFrom[x][y] = currentTurn;
-        }
-        comeFrom[x][y] = currentTurn;
         commandList.add(new MovementCommand(cell, direction, population));
+        if(firstComeFrom[cell.getX()][cell.getY()] == 0) {
+            firstComeFrom[cell.getX()][cell.getY()] = currentTurn;
+        }
+        comeFrom[cell.getX()][cell.getY()] = currentTurn;
     }
 
     public void strategy1(UniverseView universeView, List<MovementCommand> commandList) {
@@ -174,13 +160,8 @@ public class GluttonBot implements PlayerBot {
 
             for(int j = 0; j < i; j++) {
                 Coordinates neighbour = cell.getNeighbour(directions.get(0));
-
                 int neighbourPopulation = universeView.getPopulation(neighbour);
-                // TODO: tutaj jakos mozna jeszcze poprawic, np na srodku zeby nie zostawalo po malo jednostek tylko po wiecej
-                int toMove = Math.min(currentPopulation / (i + DENOMINATOR_VALUE),
-                        (enemiesAmount[x][y] > 0 ? 200 : 100) - neighbourPopulation - movedPopulation[neighbour.getX()][neighbour.getY()]);
-
-                move(commandList, cell, directions.get(0), toMove);
+                move(commandList, cell, directions.get(0), Math.min(currentPopulation / (i + DENOMINATOR_VALUE), 101 - neighbourPopulation));
                 directions.remove(0);
             }
 

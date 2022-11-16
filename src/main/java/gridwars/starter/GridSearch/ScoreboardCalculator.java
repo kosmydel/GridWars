@@ -17,9 +17,14 @@ public class ScoreboardCalculator {
         List<Supplier<? extends PlayerBot>> list = List.of(
                 GluttonBot::new,
                 GluttonBotPRO::new,
+                GluttonBotPRO2::new,
+                GluttonBotPRO3::new,
                 GluttonBot_WorkingGravity6::new,
                 GluttonBot_WorkingGravity5::new,
                 GluttonBot_WorkingGravity4::new,
+                GluttonBot6::new,
+                GluttonBot2::new,
+                SquirrelBot::new,
                 iFABot::new
         );
         PlayBotsScoreboard(list, 3);

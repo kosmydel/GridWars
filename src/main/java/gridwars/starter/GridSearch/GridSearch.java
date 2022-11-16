@@ -2,111 +2,109 @@ package gridwars.starter.GridSearch;
 
 import cern.ais.gridwars.HeadlessRunner;
 import cern.ais.gridwars.api.bot.PlayerBot;
-import gridwars.starter.*;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class GridSearch {
-    public static void main(String[] args) {
 
-        List<Supplier<? extends PlayerBot>> list = List.of(
-                GluttonBot::new,
-
-                GluttonBot3::new,
-
-                iFABot::new,
-                MovingBot::new);
-        PlayBotsScoreboard(list, 3);
-    }
-    private static void PlayBotsScoreboard(List<Supplier<? extends PlayerBot>> list, int rounds_per_match)
+    private static final int rounds = 5;
+    private static final int groupSize = 10;
+    public static Map<String, Object> run(Map<String, List<Object>> hyperparameterSpace,
+                                          Function<Map<String, Object>, Supplier<? extends PlayerBot>>  botGenerator,
+                                          List<Supplier<? extends PlayerBot>> initialBots)
     {
-        Map<String, Integer> scoreboardWins = new HashMap<>();
-        Map<String, Integer> scoreboardDraws = new HashMap<>();
-        Map<String, Integer> scoreboardLosses = new HashMap<>();
-
-        for(int i = 0; i < list.size(); i++)
+        var spaceCopy = new HashMap<>(hyperparameterSpace);
+        var currentParameterSet = expandProduct(spaceCopy)
+                .filter(params ->
+                        initialBots
+                                .stream()
+                                .flatMap(sup -> IntStream.range(0, rounds).mapToObj(_ -> sup))
+                                .parallel()
+                                .mapToDouble(testingBot ->
+                                        botWon(botGenerator.apply(params), testingBot)).average().orElse(0) > 0.5)
+                .collect(Collectors.toList());
+        while(currentParameterSet.size() > 1)
         {
-            for(int j= i + 1; j < list.size(); j++)
+            List<List<Map<String,Object>>> splits = new LinkedList<>();
+            for(int i=0;i<currentParameterSet.size();i+= groupSize)
             {
-                for(int round = 0 ; round < rounds_per_match ; round++)
-                {
-                    try{
-                        PlayerBot redBot = list.get(i).get();
-                        PlayerBot blueBot = list.get(j).get();
-                        String redBotName = getBotName(redBot);
-                        String blueBotName = getBotName(blueBot);
+                int j = Math.min(i + groupSize, currentParameterSet.size());
+                splits.add(currentParameterSet.subList(i, j));
+            }
+            currentParameterSet = splits
+                    .stream()
+                    .parallel()
+                    .map(list -> processGroup(list, botGenerator))
+                    .collect(Collectors.toList());
+        }
+        return currentParameterSet.get(0);
+    }
+    private static Map<String, Object> processGroup(List<Map<String, Object>> group,
+                                                    Function<Map<String, Object>, Supplier<? extends PlayerBot>>  botGenerator)
+    {
+        var winningBots = IntStream.range(0, group.size()).boxed()
+                .flatMap(i -> IntStream.range(i+1, group.size()).boxed()
+                        .map(j -> new int[]{i, j}))
+                .flatMap(arr -> IntStream.range(0, rounds).boxed()
+                        .map(_ -> arr))
+                .parallel()
+                .map(arr -> {
+                    try {
+                        int i = arr[0];
+                        int j = arr[1];
+                        PlayerBot redBot = botGenerator.apply(group.get(i)).get();
+                        PlayerBot blueBot = botGenerator.apply(group.get(j)).get();
 
-                        scoreboardWins.putIfAbsent(redBotName, 0);
-                        scoreboardDraws.putIfAbsent(redBotName, 0);
-                        scoreboardLosses.putIfAbsent(redBotName, 0);
 
-                        scoreboardWins.putIfAbsent(blueBotName, 0);
-                        scoreboardDraws.putIfAbsent(blueBotName, 0);
-                        scoreboardLosses.putIfAbsent(blueBotName, 0);
-
-
-                        String redBotLog = String.format("./logs/%s-%s_%d-%s.log",
-                                redBotName, blueBotName, round, redBotName);
-                        String blueBotLog = String.format("./logs/%s-%s_%d-%s.log",
-                                redBotName, blueBotName, round, blueBotName);
-                        var ret = HeadlessRunner.runGame(blueBot, redBot, blueBotLog, redBotLog);
-                        System.out.printf("%d %s %s %s\n", round, blueBotName, getSign(ret), redBotName);
-                        switch (ret)
-                        {
-                            case RED_WON:
-                                //redbotwon
-                                scoreboardWins.computeIfPresent(redBotName, (key, old) -> old + 1);
-                                scoreboardLosses.computeIfPresent(blueBotName, (key, old) -> old + 1);
-                                break;
-                            case DRAW:
-                                //draw
-                                scoreboardDraws.computeIfPresent(redBotName, (key, old) -> old + 1);
-                                scoreboardDraws.computeIfPresent(blueBotName, (key, old) -> old + 1);
-                                break;
-                            case BLUE_WON:
-                                //bluebot
-                                scoreboardWins.computeIfPresent(blueBotName, (key, old) -> old + 1);
-                                scoreboardLosses.computeIfPresent(redBotName, (key, old) -> old + 1);
-                                break;
-                        }
+                        var result=  HeadlessRunner.runGame(blueBot, redBot, "./bot2.log", "./bot1.log");
+                        if(result == HeadlessRunner.GAME_RESULT.RED_WON)
+                            return i;
+                        if(result == HeadlessRunner.GAME_RESULT.BLUE_WON)
+                            return j;
                     }
                     catch (Exception e)
                     {
                         e.printStackTrace();
                     }
-                }
-
-
-            }
-        }
-        System.out.println("Name =>  Wins, Draws, Losses");
-        for(String key: scoreboardWins.keySet())
+                    return -1;
+                }).filter(i -> i >= 0).collect(Collectors.toList());
+        int[] counts = new int[group.size()];
+        for(int id: winningBots)
         {
-            System.out.printf("%s => %d - %d - %d\n",key,scoreboardWins.get(key), scoreboardDraws.get(key), scoreboardLosses.get(key));
+            counts[id]++;
         }
+        return group.get(IntStream.range(0, group.size()).boxed().max(Comparator.comparingInt(x -> counts[x])).orElse(0));
     }
 
-
-    private static String getBotName(PlayerBot bot)
+    private static Stream<Map<String,Object>> expandProduct(Map<String, List<Object>> space)
     {
-        if(bot instanceof INameGen)
-        {
-            return ((INameGen)bot).getName();
-        }
-        return bot.getClass().getCanonicalName();
+        Optional<String> currentKeyOptional = space.keySet().stream().findAny();
+        if(currentKeyOptional.isEmpty())
+            return Stream.of(new HashMap<>());
+        String currentKey = currentKeyOptional.get();
+        Collection<Object> currentParameters = space.get(currentKey);
+        space.remove(currentKey);
+        return expandProduct(space).flatMap(
+                parameters -> currentParameters.stream().map(
+                        parameter ->
+                        {
+                            var copy = new HashMap<>(parameters);
+                            copy.put(currentKey, parameter);
+                            return copy;
+                        })
+                );
     }
 
-    private static String getSign(HeadlessRunner.GAME_RESULT ret)
+    private static double botWon(Supplier<? extends PlayerBot> testedBot, Supplier<? extends PlayerBot> testingBot)
     {
-        if(ret == HeadlessRunner.GAME_RESULT.RED_WON)
-            return "<";
-        if(ret == HeadlessRunner.GAME_RESULT.BLUE_WON)
-            return ">";
-        return "=";
+        return HeadlessRunner.runGame(testedBot.get(), testingBot.get(), "./bot1.log", "./bot2.log")
+                == HeadlessRunner.GAME_RESULT.BLUE_WON ? 1 : 0;
     }
+
+
 }

@@ -29,7 +29,7 @@ public class ScoreboardCalculator {
         );
         PlayBotsScoreboard(list, 3);
     }
-    private static class ParalellResult{
+    static class ParalellResult{
         public String blueBotName;
         public String redBotName;
         public HeadlessRunner.GAME_RESULT result;

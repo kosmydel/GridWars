@@ -29,10 +29,42 @@ public class GluttonBot implements PlayerBot {
 
     int[][] movedPopulation = new int[50][50];
 
-    private static final int STRATEGY_CHANGE = 80;
-    private static int DENOMINATOR_VALUE = 1;
+    private final int STRATEGY_CHANGE;
+    private final double DENOMINATOR_VALUE;
+
+    private final double LINEAR_TRANSFER_DENOMINATOR;
+
+    private final int LINEAR_TRANSFER_POPULATION_THRESHOLD;
+    private final int LINEAR_TRANSFER_TURN_THRESHOLD;
+
+    private final int BFS_GRAVITY_INCREMENT;
+
     Random r = new Random(42);
     UniverseView universeView;
+    public GluttonBot()
+    {
+        this(80,
+                1.0,
+                4.0,
+                20,
+                150,
+                1);
+    }
+    public GluttonBot(int strategy_change,
+                      double denominator_value,
+                      double linear_transfer_denominator,
+                      int linear_transfer_population_threshold,
+                      int linear_transfer_turn_threshold,
+                      int bfs_gravity_increment)
+    {
+        STRATEGY_CHANGE = strategy_change;
+        DENOMINATOR_VALUE = denominator_value;
+        LINEAR_TRANSFER_DENOMINATOR = linear_transfer_denominator;
+        LINEAR_TRANSFER_POPULATION_THRESHOLD = linear_transfer_population_threshold;
+        LINEAR_TRANSFER_TURN_THRESHOLD = linear_transfer_turn_threshold;
+        BFS_GRAVITY_INCREMENT = bfs_gravity_increment;
+    }
+
 
     public void getNextCommands(UniverseView universeView, List<MovementCommand> commandList) {
         try {
@@ -177,7 +209,7 @@ public class GluttonBot implements PlayerBot {
 
                 int neighbourPopulation = universeView.getPopulation(neighbour);
                 // TODO: tutaj jakos mozna jeszcze poprawic, np na srodku zeby nie zostawalo po malo jednostek tylko po wiecej
-                int toMove = Math.min(currentPopulation / (i + DENOMINATOR_VALUE),
+                int toMove = Math.min((int)(currentPopulation / (i + DENOMINATOR_VALUE)),
                         (enemiesAmount[x][y] > 0 ? 200 : 100) - neighbourPopulation - movedPopulation[neighbour.getX()][neighbour.getY()]);
 
                 move(commandList, cell, directions.get(0), toMove);
@@ -280,7 +312,7 @@ public class GluttonBot implements PlayerBot {
                     int y = neighbour.getY();
                     if (!visited[x][y]) {
                         queue.add(neighbour);
-                        gravity[x][y] = gravity[p_x][p_y] + 1;
+                        gravity[x][y] = gravity[p_x][p_y] + BFS_GRAVITY_INCREMENT;
                         visited[x][y] = true;
                     }
                 }
@@ -296,15 +328,14 @@ public class GluttonBot implements PlayerBot {
         }
 
 
-        if(currentTurn < 150) return;
+        if(currentTurn < LINEAR_TRANSFER_TURN_THRESHOLD) return;
         for(Coordinates cell : universeView.getMyCells()) {
             int i = cell.getX();
             int j = cell.getY();
 
             int population = universeView.getPopulation(universeView.getCoordinates(i, j));
-            // TODO: PARAMETRY
-            if (population < 20) {
-                gravity[i][j] -= population / 4;
+            if (population < LINEAR_TRANSFER_POPULATION_THRESHOLD) {
+                gravity[i][j] -= population / LINEAR_TRANSFER_DENOMINATOR;
             }
         }
     }

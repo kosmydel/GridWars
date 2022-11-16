@@ -4,9 +4,7 @@ import cern.ais.gridwars.HeadlessRunner;
 import cern.ais.gridwars.api.bot.PlayerBot;
 import gridwars.starter.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -15,10 +13,11 @@ public class ScoreboardCalculator {
     public static void main(String[] args) {
 
         List<Supplier<? extends PlayerBot>> list = List.of(
-                GluttonBot::new,
+                //() -> new GluttonBot(115, 1.0),
                 GluttonBotPRO::new,
                 GluttonBotPRO2::new,
                 GluttonBotPRO3::new,
+                GluttonBotPRO4::new,
                 GluttonBot_WorkingGravity6::new,
                 GluttonBot_WorkingGravity5::new,
                 GluttonBot_WorkingGravity4::new,
@@ -111,7 +110,9 @@ public class ScoreboardCalculator {
 
         }
         System.out.println("Name =>  Wins, Draws, Losses");
-        for(String key: scoreboardWins.keySet())
+        List<String> keys = new LinkedList<>(scoreboardWins.keySet());
+        keys.sort(Comparator.comparingInt(scoreboardWins::get));
+        for(String key: keys)
         {
             System.out.printf("%s => %d - %d - %d\n",key,scoreboardWins.get(key), scoreboardDraws.get(key), scoreboardLosses.get(key));
         }

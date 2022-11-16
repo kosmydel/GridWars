@@ -4,10 +4,9 @@ import cern.ais.gridwars.api.Coordinates;
 import cern.ais.gridwars.api.UniverseView;
 import cern.ais.gridwars.api.command.MovementCommand;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Util {
@@ -32,9 +31,13 @@ public class Util {
         Queue<Coordinates> coordinatesQueue = new LinkedList<>();
         for(Coordinates cell : universeView.getMyCells())
         {
-            if(universeView.getPopulation(cell) == 0)
+            if(universeView.getPopulation(cell) < 5)
                 continue;
-            if(Util.isOnEdge(universeView, cell))
+            if(Arrays.stream(MovementCommand.Direction.values())
+                    .anyMatch(dir -> {
+                        Coordinates neighbour = cell.getNeighbour(dir);
+                        return !universeView.belongsToMe(neighbour) || universeView.getPopulation(neighbour) < 5;
+                    }))
             {
                 distances[cell.getX()][cell.getY()] = 0;
                 coordinatesQueue.add(cell);
@@ -56,5 +59,22 @@ public class Util {
             }
         }
         return distances;
+    }
+
+    public static List<MovementCommand.Direction> getDirectionWhere(Predicate<MovementCommand.Direction> predicate)
+    {
+        return Arrays.stream(MovementCommand.Direction.values()).filter(predicate).collect(Collectors.toList());
+    }
+    public static List<Integer> splitEvenly(int value, int into)
+    {
+        int divided = value / into;
+        int remainder = value - divided * into;
+        List<Integer> output = new ArrayList<>(into);
+        for(int i = 0 ; i< into; i++)
+        {
+            output.add(divided + i < remainder ? 1 : 0);
+        }
+        Collections.shuffle(output);
+        return output;
     }
 }

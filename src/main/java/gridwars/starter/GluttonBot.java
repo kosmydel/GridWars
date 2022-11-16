@@ -17,13 +17,25 @@ public class GluttonBot implements PlayerBot {
 
     int[][] firstComeFrom = new int[50][50];
     int[][] comeFrom = new int[50][50];
+    int[][] gravity = new int[50][50];
+    int[][] neighboursAmount = new int[50][50];
     int currentTurn = 1;
 
     public void getNextCommands(UniverseView universeView, List<MovementCommand> commandList) {
-        currentTurn = universeView.getCurrentTurn();
         try {
-            if(currentTurn % 100 < 90) {
+            long t0 = System.currentTimeMillis();
+            currentTurn = universeView.getCurrentTurn();
+            generateNeighboursAmount(universeView);
+//            strategy2(universeView, commandList);
+            if(currentTurn < 100) {
                 strategy1(universeView, commandList);
+            }else {
+                generateGravityMap(universeView);
+                strategy2(universeView, commandList);
+            }
+            long tk = System.currentTimeMillis();
+            if(tk-t0 > 50) {
+                System.out.println("[!!!] Completed round " + currentTurn + " in " + (tk-t0) + "ms");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -44,8 +56,6 @@ public class GluttonBot implements PlayerBot {
         if (startingPosition == null) {
             startingPosition = myCells.get(0);
         }
-
-        currentTurn = universeView.getCurrentTurn();
 
         for (Coordinates cell : myCells) {
             int currentPopulation = universeView.getPopulation(cell);
@@ -100,54 +110,111 @@ public class GluttonBot implements PlayerBot {
     public void strategy2(UniverseView universeView, List<MovementCommand> commandList) {
         List<Coordinates> myCells = universeView.getMyCells();
 
-        if (startingPosition == null) {
-            startingPosition = myCells.get(0);
-        }
-
-        currentTurn = universeView.getCurrentTurn();
-
         for (Coordinates cell : myCells) {
+            int x = cell.getX();
+            int y = cell.getY();
             int currentPopulation = universeView.getPopulation(cell);
 
-            if (currentPopulation <= 5) {
-                continue;
-            }
-            boolean doneSomething = true;
-            while (doneSomething) {
-                doneSomething = false;
-                for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-                    Coordinates neighbour = cell.getNeighbour(dir);
-                    boolean isMine = universeView.belongsToMe(neighbour);
-                    boolean isEmpty = universeView.isEmpty(neighbour);
-
-                    int neighboursPopulation = (isMine || isEmpty) ? universeView.getPopulation(neighbour) : 0;
-                    if(currentPopulation < neighboursPopulation) {
-                        continue;
-                    }
-                    int movePopulation = Math.min(
-                            (int)((double) (currentPopulation - neighboursPopulation) / 10.0),
-                            100 - neighboursPopulation);
-                    if (movePopulation > 0) {
-                        currentPopulation -= movePopulation;
-                        doneSomething = true;
-                        move(commandList, cell, dir, movePopulation);
-                    }
+            List<MovementCommand.Direction> directions = new ArrayList<>();
+            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+                Coordinates neighbour = cell.getNeighbour(dir);
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+                if(gravity[neighbour.getX()][neighbour.getY()] < gravity[x][y]) {
+                    directions.add(dir);
                 }
             }
+
+            Collections.shuffle(directions);
+
+            int i;
+            for(i = directions.size(); i > 0; i--){
+                if(currentPopulation / (i + 1) >= 5) break;
+            }
+
+            if(i == 0) continue;
+
+            for(int j = 0; j < i; j++) {
+                move(commandList, cell, directions.get(0), currentPopulation / (i + 1));
+                directions.remove(0);
+            }
+
         }
     }
 
     public List<MovementCommand.Direction> getExpansionDirectories(UniverseView universeView, Coordinates cell) {
         List<MovementCommand.Direction> expansionDirections = new ArrayList<>();
+
         for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
             Coordinates neighbour = cell.getNeighbour(dir);
             boolean isMine = universeView.belongsToMe(neighbour);
             boolean isEmpty = universeView.isEmpty(neighbour);
-            if(isEmpty) {
+            if(isEmpty || !isMine) {
                 expansionDirections.add(dir);
             }
         }
         return expansionDirections;
+    }
+
+    public void generateNeighboursAmount(UniverseView universeView) {
+        for (int[] row: neighboursAmount)
+            Arrays.fill(row, -1);
+
+        for(Coordinates cell : universeView.getMyCells()) {
+            neighboursAmount[cell.getX()][cell.getY()]++;
+            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+                Coordinates neighbour = cell.getNeighbour(dir);
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+                if(!isEmpty && isMine) {
+                    neighboursAmount[neighbour.getX()][neighbour.getY()]++;
+                }
+            }
+        }
+    }
+    public void generateGravityMap(UniverseView universeView) {
+        for (int[] row: gravity)
+            Arrays.fill(row, -1);
+
+        LinkedList<Coordinates> queue = new LinkedList<>();
+        for(int i = 0; i < 50; i++) {
+            for(int j = 0; j < 50; j++) {
+                if(neighboursAmount[i][j] >= 0 && neighboursAmount[i][j] < 4) {
+                    queue.add(universeView.getCoordinates(i, j));
+                    gravity[i][j] = 0;
+                }
+            }
+        }
+
+        while(!queue.isEmpty()) {
+            Coordinates p = queue.poll();
+            int p_x = p.getX();
+            int p_y = p.getY();
+            for(MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+                Coordinates neighbour = p.getNeighbour(dir);
+
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+
+                if(isMine && !isEmpty) {
+                    int x = neighbour.getX();
+                    int y = neighbour.getY();
+                    if(gravity[x][y] < 0) {
+                        queue.add(neighbour);
+                        gravity[x][y] = gravity[p_x][p_y] + 1;
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i < 50; i++) {
+            for(int j = 0; j < 50; j++) {
+                int population = universeView.getPopulation(universeView.getCoordinates(i, j));
+                if(population > 80) {
+                    gravity[i][j] += 1;
+                }
+            }
+        }
     }
 
 

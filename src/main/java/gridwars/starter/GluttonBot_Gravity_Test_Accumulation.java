@@ -6,15 +6,13 @@ import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
 
 import java.util.*;
-
-import gridwars.starter.Util;
 //Util.getExpansionDirections(universeView, cell);
 
 
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBot_Gravity_Test_Accumulation implements PlayerBot {
     Coordinates startingPosition = null;
     Random r = new Random();
 

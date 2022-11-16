@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBot_WorkingGravity6 implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -45,6 +45,7 @@ public class GluttonBot implements PlayerBot {
                 startingPosition = universeView.getMyCells().get(0);
             }
 
+//            strategy2(universeView, commandList);
             universe = new int[50][50];
             for(Coordinates coordinates : universeView.getMyCells()) {
                 if(universeView.belongsToMe(coordinates)){
@@ -70,7 +71,8 @@ public class GluttonBot implements PlayerBot {
             } else if(currentTurn < STRATEGY_CHANGE) {
                 strategy1(universeView, commandList);
             }else {
-                strategy2(universeView, commandList);
+                strategy1(universeView, commandList);
+//                strategy2(universeView, commandList);
             }
             long tk = System.currentTimeMillis();
             if(tk-t0 > 50) {
@@ -93,19 +95,27 @@ public class GluttonBot implements PlayerBot {
         List<Coordinates> myCells = universeView.getMyCells();
 
         for (Coordinates cell : myCells) {
-            int x = cell.getX();
-            int y = cell.getY();
             int currentPopulation = universeView.getPopulation(cell);
+            if (currentPopulation <= 5) continue;
 
             List<MovementCommand.Direction> okDirections = new ArrayList<>();
+            int currentArrVal = firstComeFrom[cell.getX()][cell.getY()];
+
             for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
                 Coordinates neighbour = cell.getNeighbour(dir);
-                if(gravity[neighbour.getX()][neighbour.getY()] < gravity[x][y]) {
+                int arrVal = firstComeFrom[neighbour.getX()][neighbour.getY()];
+
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+
+                if (arrVal == 0 || arrVal > currentArrVal || (!isEmpty && !isMine)) {
                     okDirections.add(dir);
                 }
             }
 
             Collections.shuffle(okDirections);
+
+            if (okDirections.size() == 0) continue;
 
             int toMovePopulation = currentPopulation - Math.max(5, (int) (Math.sqrt((double) currentTurn / 4)));
 //            int toMovePopulation = currentPopulation - 5;
@@ -124,14 +134,15 @@ public class GluttonBot implements PlayerBot {
 
                     int movePopulation = Math.min(toMovePopulation / (okDirections.size() - i), 100 - neighboursPopulation);
 
-                    if (movePopulation > 0 && neighboursPopulation + movePopulation >= 5) {
+//                    if (movePopulation > 0 && neighboursPopulation + movePopulation >= 5) {
+                    if (movePopulation > 0) {
                         toMovePopulation -= movePopulation;
                         doneSomething = true;
                         move(commandList, cell, dir, movePopulation);
+//                        okDirections.remove(i);
                     }
                 }
             }
-
         }
     }
 

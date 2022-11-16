@@ -19,12 +19,12 @@ public class GridSearch {
 
     public static void main(String[] args) {
         var hyper = Map.of(
-                "STRATEGY_CHANGE", List.of((Object)100, 105, 110, 115, 120, 125, 130, 135, 140, 145),
-                "DENOMINATOR_VALUE", List.of((Object) 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 5.0, 7.0, 10.0),
-                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object)1.0,2.0,4.0,6.0,8.0,10.0),
-                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)10,20,30,40,50),
-                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)110,120,130,140,150,160),
-                "BFS_GRAVITY_INCREMENT", List.of((Object)1,2,3,5,7)
+                "STRATEGY_CHANGE", List.of((Object)110, 115, 120, 125, 130, 135),
+                "DENOMINATOR_VALUE", List.of((Object) 0.5, 0.75, 1.0, 2.0, 3.0, 5.0, 10.0),
+                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object)1.0, 2.0, 4.0, 6.0),
+                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)10,20,30,40),
+                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)110,120,140,160),
+                "BFS_GRAVITY_INCREMENT", List.of((Object)1,2,5)
         );
         var result = run(hyper,
                 parameters -> (() -> new GluttonBot(
@@ -35,9 +35,7 @@ public class GridSearch {
                         (Integer) parameters.get("LINEAR_TRANSFER_TURN_THRESHOLD"),
                         (Integer) parameters.get("BFS_GRAVITY_INCREMENT")
                 )),
-                List.of(GluttonBotPRO4::new,
-                        GluttonBot_WorkingGravity6::new,
-                        GluttonBot6::new));
+                List.of());
         for(var param : result.entrySet())
         {
             System.out.println("["+ param.getKey()+ "]=" + param.getValue());
@@ -55,7 +53,7 @@ public class GridSearch {
                                 .flatMap(sup -> IntStream.range(0, rounds).mapToObj(a -> sup))
                                 .parallel()
                                 .mapToDouble(testingBot ->
-                                        botWon(botGenerator.apply(params), testingBot)).average().orElse(0) > initial_threshold)
+                                        botWon(botGenerator.apply(params), testingBot)).average().orElse(1) > initial_threshold)
                 .collect(Collectors.toList());
         while(currentParameterSet.size() > 1)
         {
@@ -68,6 +66,7 @@ public class GridSearch {
             }
             currentParameterSet = IntStream.range(0, splits.size())
                     .boxed()
+//                    .parallel()
                     .map(index -> {
                         System.out.println("Processing group: " + index);
                         return processGroup(splits.get(index), botGenerator);

@@ -13,18 +13,10 @@ public class ScoreboardCalculator {
     public static void main(String[] args) {
 
         List<Supplier<? extends PlayerBot>> list = List.of(
-                //() -> new GluttonBot(115, 1.0),
-                GluttonBotPRO::new,
-                GluttonBotPRO2::new,
-                GluttonBotPRO3::new,
+//                () -> new GluttonBot(115, 1.0),
+                GluttonBot::new,
                 GluttonBotPRO4::new,
-                GluttonBot_WorkingGravity6::new,
-                GluttonBot_WorkingGravity5::new,
-                GluttonBot_WorkingGravity4::new,
-                GluttonBot6::new,
-                GluttonBot2::new,
-                SquirrelBot::new,
-                iFABot::new
+                SquirrelBot::new
         );
         PlayBotsScoreboard(list, 3);
     }

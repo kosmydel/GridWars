@@ -21,7 +21,7 @@ jar {
     manifest {
         attributes(
             // TODO specify the fully qualified class name of your bot here
-            'Bot-Class-Name': 'gridwars.starter.GluttonBot',
+            'Bot-Class-Name': 'gridwars.starter.GluttonBotPRO5',
         )
     }
 }

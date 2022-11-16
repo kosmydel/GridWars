@@ -19,6 +19,7 @@ public class GluttonBot implements PlayerBot {
     int[][] comeFrom = new int[50][50];
 
     int[][] gravity = new int[50][50];
+    int[][] distanceFromCenter = new int[50][50];
     boolean[][] visited = new boolean[50][50];
     //    int[][] edgeDistance = new int[50][50];
     int[][] neighboursAmount = new int[50][50];
@@ -43,12 +44,18 @@ public class GluttonBot implements PlayerBot {
     UniverseView universeView;
     public GluttonBot()
     {
-        this(80,
+        this(100,
                 1.0,
                 4.0,
-                20,
+                30,
                 150,
                 1);
+//        this(140,
+//                0.5,
+//                1.0,
+//                10,
+//                125,
+//                1);
     }
     public GluttonBot(int strategy_change,
                       double denominator_value,
@@ -87,7 +94,7 @@ public class GluttonBot implements PlayerBot {
                 }
             }
             int size = 5;
-            if(currentTurn < 10 && false) {
+            if(currentTurn < 20 && false) {
                 System.out.println("---- turn ---- " + currentTurn);
                 for(int i = (startingPosition.getX() - size + 200) % 50; i < (startingPosition.getX() + size + 200)%50; i++){
                     for(int j = (startingPosition.getY() - size + 200)%50; j < (startingPosition.getY() + size + 200)%50; j++) {
@@ -98,12 +105,13 @@ public class GluttonBot implements PlayerBot {
                 }
             }
             if(currentTurn <= 2) {
-                move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.UP, 25);
+                move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.UP, 20);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.RIGHT, 25);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.DOWN, 25);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.LEFT, 25);
             } else if(currentTurn < STRATEGY_CHANGE) {
-                strategy1(universeView, commandList);
+//                strategy1(universeView, commandList);
+                strategy0(universeView, commandList);
             }else {
                 strategy2(universeView, commandList);
             }
@@ -112,7 +120,7 @@ public class GluttonBot implements PlayerBot {
                 System.out.println("[!!!] Completed round " + currentTurn + " in " + (tk-t0) + "ms");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -131,6 +139,79 @@ public class GluttonBot implements PlayerBot {
         }
         comeFrom[x][y] = currentTurn;
         commandList.add(new MovementCommand(cell, direction, population));
+    }
+
+    public void strategy0(UniverseView universeView, List<MovementCommand> commandList) {
+        LinkedList<Coordinates> queue = new LinkedList<>();
+        LinkedList<Coordinates> queue2 = new LinkedList<>();
+        visited = new boolean[50][50];
+        distanceFromCenter = new int[50][50];
+
+        int i = startingPosition.getX();
+        int j = startingPosition.getY();
+
+        queue.add(universeView.getCoordinates(i, j));
+        queue2.add(universeView.getCoordinates(i, j));
+        visited[i][j] = true;
+        distanceFromCenter[i][j] = 1;
+
+        while (!queue.isEmpty()) {
+            Coordinates p = queue.poll();
+            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+                Coordinates neighbour = p.getNeighbour(dir);
+
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+
+                int x = neighbour.getX();
+                int y = neighbour.getY();
+                if (!visited[x][y]) {
+                    if(isMine && !isEmpty) {
+                        queue.add(neighbour);
+                        queue2.add(neighbour);
+                        visited[x][y] = true;
+                        distanceFromCenter[x][y] = distanceFromCenter[p.getX()][p.getY()] + 1;
+                    }
+                }
+            }
+        }
+
+        while (!queue2.isEmpty()) {
+            Coordinates p = queue2.poll();
+            var okDirections = new ArrayList<MovementCommand.Direction>();
+
+            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
+                Coordinates neighbour = p.getNeighbour(dir);
+
+                boolean isMine = universeView.belongsToMe(neighbour);
+                boolean isEmpty = universeView.isEmpty(neighbour);
+
+                int x = neighbour.getX();
+                int y = neighbour.getY();
+                if(isEmpty || distanceFromCenter[x][y] > distanceFromCenter[p.getX()][p.getY()]) {
+                    okDirections.add(dir);
+                }
+            }
+
+            int toMovePopulation = Math.min(universeView.getPopulation(p) + movedPopulation[p.getX()][p.getY()] - 5, universeView.getPopulation(p));
+
+            boolean doneSomething = true;
+            while (toMovePopulation > 0 && doneSomething) {
+                doneSomething = false;
+                Collections.shuffle(okDirections);
+                for (int c = 0; c < okDirections.size(); c++) {
+                    MovementCommand.Direction dir = okDirections.get(c);
+
+                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - c), universeView.getPopulation(p));
+
+                    if (movePopulation > 0) {
+                        toMovePopulation -= movePopulation;
+                        doneSomething = true;
+                        move(commandList, p, dir, movePopulation);
+                    }
+                }
+            }
+        }
     }
 
     public void strategy1(UniverseView universeView, List<MovementCommand> commandList) {
@@ -181,7 +262,6 @@ public class GluttonBot implements PlayerBot {
 
     public void strategy2(UniverseView universeView, List<MovementCommand> commandList) {
         List<Coordinates> myCells = universeView.getMyCells();
-
         for (Coordinates cell : myCells) {
             int x = cell.getX();
             int y = cell.getY();
@@ -218,21 +298,6 @@ public class GluttonBot implements PlayerBot {
 
         }
     }
-
-    public List<MovementCommand.Direction> getExpansionDirectories(UniverseView universeView, Coordinates cell) {
-        List<MovementCommand.Direction> expansionDirections = new ArrayList<>();
-
-        for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-            Coordinates neighbour = cell.getNeighbour(dir);
-            boolean isMine = universeView.belongsToMe(neighbour);
-            boolean isEmpty = universeView.isEmpty(neighbour);
-            if(isEmpty || !isMine) {
-                expansionDirections.add(dir);
-            }
-        }
-        return expansionDirections;
-    }
-
     public void generateNeighboursAmount(UniverseView universeView) {
         for (int[] row: neighboursAmount)
             Arrays.fill(row, -1);
@@ -327,8 +392,8 @@ public class GluttonBot implements PlayerBot {
             }
         }
 
-
         if(currentTurn < LINEAR_TRANSFER_TURN_THRESHOLD) return;
+
         for(Coordinates cell : universeView.getMyCells()) {
             int i = cell.getX();
             int j = cell.getY();
@@ -337,13 +402,7 @@ public class GluttonBot implements PlayerBot {
             if (population < LINEAR_TRANSFER_POPULATION_THRESHOLD) {
                 gravity[i][j] -= population / LINEAR_TRANSFER_DENOMINATOR;
             }
+            // TODO: sprawdzic podwyzszanie z drugiej strony
         }
     }
-
-
-
-    public boolean isOnEdge(UniverseView universeView, Coordinates cell) {
-        return getExpansionDirectories(universeView, cell).size() == 0;
-    }
-
 }

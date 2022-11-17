@@ -26,6 +26,22 @@ jar {
     }
 }
 
+task execute(type:JavaExec) {
+    main = project.hasProperty("mainClass") ? getProperty("mainClass") : "NULL"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task scoreboard(type: JavaExec){
+    main = "gridwars.starter.GridSearch.ScoreboardCalculator"
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emulator(type: JavaExec){
+    main = "gridwars.starter.EmulatorRunner"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+
+
 dependencies {
     implementation fileTree(dir: 'lib')
 }

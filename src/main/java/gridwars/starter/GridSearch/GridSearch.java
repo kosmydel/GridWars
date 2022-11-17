@@ -19,15 +19,15 @@ public class GridSearch {
 
     public static void main(String[] args) {
         var hyper = Map.of(
-                "STRATEGY_CHANGE", List.of((Object)50, 75, 100),
-                "DENOMINATOR_VALUE", List.of((Object) 0.75, 1.0, 1.25),
-                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object)0.8, 1.0, 1.2),
-                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)8, 10, 13),
-                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)90, 100, 110),
+                "STRATEGY_CHANGE", List.of((Object)50, 60, 75, 100),
+                "DENOMINATOR_VALUE", List.of((Object) 0.6, 0.75, 1.0),
+                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object) 1.1, 1.2, 1.4),
+                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)8, 10, 13, 15),
+                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)80, 90, 100, 110),
                 "BFS_GRAVITY_INCREMENT", List.of((Object)1)
         );
         var result = run(hyper,
-                parameters -> (() -> new GluttonBotPRO5_T(
+                parameters -> (() -> new GluttonBotPRO5_T_tuned(
                         (Integer) parameters.get("STRATEGY_CHANGE"),
                         (Double) parameters.get("DENOMINATOR_VALUE"),
                         (Double) parameters.get("LINEAR_TRANSFER_DENOMINATOR"),

@@ -26,8 +26,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
     int[][] enemiesAmount = new int[50][50];
     int currentTurn = 1;
 
-    int[][] universe = new int[50][50];
-
     int[][] movedPopulation = new int[50][50];
 
     private final int STRATEGY_CHANGE;
@@ -72,38 +70,20 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
             long t0 = System.currentTimeMillis();
             this.universeView = universeView;
             currentTurn = universeView.getCurrentTurn();
-            generateNeighboursAmount(universeView);
-            generateEnemiesAmount(universeView);
+
             movedPopulation = new int[50][50];
 
             if (startingPosition == null) {
                 startingPosition = universeView.getMyCells().get(0);
             }
 
-            universe = new int[50][50];
-            for(Coordinates coordinates : universeView.getMyCells()) {
-                if(universeView.belongsToMe(coordinates)){
-                    universe[coordinates.getX()][coordinates.getY()] = universeView.getPopulation(coordinates);
-                }
-            }
-            int size = 5;
-            if(currentTurn < 20 && false) {
-                System.out.println("---- turn ---- " + currentTurn);
-                for(int i = (startingPosition.getX() - size + 200) % 50; i < (startingPosition.getX() + size + 200)%50; i++){
-                    for(int j = (startingPosition.getY() - size + 200)%50; j < (startingPosition.getY() + size + 200)%50; j++) {
-                        System.out.print(String.format("% 3d", universe[i][j]) + ", ");
-//                        System.out.print(universe[i][j]);
-                    }
-                    System.out.println("");
-                }
-            }
+
             if(currentTurn <= 2) {
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.UP, 20);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.RIGHT, 25);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.DOWN, 25);
                 move(commandList, universeView.getMyCells().get(0), MovementCommand.Direction.LEFT, 25);
             } else if(currentTurn < STRATEGY_CHANGE) {
-//                strategy1(universeView, commandList);
                 strategy0(universeView, commandList);
             }else {
                 strategy2(universeView, commandList);
@@ -118,7 +98,7 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
     }
 
     public void move(List<MovementCommand> commandList, Coordinates cell, MovementCommand.Direction direction, int population) {
-        if(population <= 0) {
+        if(population <= 0 || !universeView.belongsToMe(cell)) {
             return;
         }
         int x = cell.getX();
@@ -177,11 +157,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
                         visited[x][y] = true;
                         gravity[x][y] = gravity[p.getX()][p.getY()] + 1;
                     }
-//                    if(isEmpty) {
-//                        queue.add(neighbour);
-//                        visited[x][y] = true;
-//                        gravity[x][y] = gravity[p.getX()][p.getY()] + 1;
-//                    }
                 }
             }
         }
@@ -193,7 +168,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
             for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
                 Coordinates neighbour = p.getNeighbour(dir);
 
-                boolean isMine = universeView.belongsToMe(neighbour);
                 boolean isEmpty = universeView.isEmpty(neighbour);
 
                 int x = neighbour.getX();
@@ -244,57 +218,12 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
                 }
             }
         }
-        boolean a = true;
-    }
-
-    public void strategy1(UniverseView universeView, List<MovementCommand> commandList) {
-        List<Coordinates> myCells = universeView.getMyCells();
-
-        for (Coordinates cell : myCells) {
-            int x = cell.getX();
-            int y = cell.getY();
-            int currentPopulation = universeView.getPopulation(cell);
-
-            List<MovementCommand.Direction> okDirections = new ArrayList<>();
-            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-                Coordinates neighbour = cell.getNeighbour(dir);
-                if(gravity[neighbour.getX()][neighbour.getY()] < gravity[x][y]) {
-                    okDirections.add(dir);
-                }
-            }
-
-            Collections.shuffle(okDirections);
-
-            int toMovePopulation = currentPopulation - Math.max(5, (int) (Math.sqrt((double) currentTurn / 4)));
-//            int toMovePopulation = currentPopulation - 5;
-
-            boolean doneSomething = true;
-            while (toMovePopulation > 0 && doneSomething) {
-                doneSomething = false;
-                for (int i = 0; i < okDirections.size(); i++) {
-                    MovementCommand.Direction dir = okDirections.get(i);
-                    Coordinates neighbour = cell.getNeighbour(dir);
-
-                    boolean isMine = universeView.belongsToMe(neighbour);
-                    boolean isEmpty = universeView.isEmpty(neighbour);
-
-                    int neighboursPopulation = (isMine && !isEmpty) ? universeView.getPopulation(neighbour) : 0;
-
-                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - i), 100 - neighboursPopulation);
-
-                    if (movePopulation > 0 && neighboursPopulation + movePopulation >= 5) {
-                        toMovePopulation -= movePopulation;
-                        doneSomething = true;
-                        move(commandList, cell, dir, movePopulation);
-                    }
-                }
-            }
-
-        }
     }
 
     public void strategy2(UniverseView universeView, List<MovementCommand> commandList) {
         List<Coordinates> myCells = universeView.getMyCells();
+        generateNeighboursAmount(universeView);
+        generateEnemiesAmount(universeView);
         generateGravityMap(universeView);
 
         for (Coordinates cell : myCells) {
@@ -323,7 +252,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
                 Coordinates neighbour = cell.getNeighbour(directions.get(0));
 
                 int neighbourPopulation = universeView.getPopulation(neighbour);
-                // TODO: tutaj jakos mozna jeszcze poprawic, np na srodku zeby nie zostawalo po malo jednostek tylko po wiecej
                 int toMove = Math.min((int)(currentPopulation / (i + DENOMINATOR_VALUE)),
                         (enemiesAmount[x][y] > 0 ? 200 : 100) - neighbourPopulation - movedPopulation[neighbour.getX()][neighbour.getY()]);
 
@@ -365,20 +293,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
         }
     }
 
-//    public int countNeighboursBy(UniverseView universeView, Coordinates cell, boolean isEmptyCondition, boolean isMineCondition) {
-//        int result = 0;
-//        for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-//            Coordinates neighbour = cell.getNeighbour(dir);
-//            boolean isMine = universeView.belongsToMe(neighbour);
-//            boolean isEmpty = universeView.isEmpty(neighbour);
-//            if(isEmptyCondition == isEmpty && isMineCondition == isMine) {
-////            if(!isEmpty && isMine) {
-//                result++;
-//                neighboursAmount[neighbour.getX()][neighbour.getY()]++;
-//            }
-//        }
-//    }
-
     public void generateGravityMap(UniverseView universeView) {
         for (int[] row : gravity)
             Arrays.fill(row, -1);
@@ -418,15 +332,6 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
                 }
             }
         }
-
-
-        int maxGravityValue = Integer.MIN_VALUE;
-        for (int i = 0; i < 50; i++) {
-            for (int j = 0; j < 50; j++) {
-                maxGravityValue = Math.max(maxGravityValue, gravity[i][j]);
-            }
-        }
-
 
         if(currentTurn < LINEAR_TRANSFER_TURN_THRESHOLD) return;
         for(Coordinates cell : universeView.getMyCells()) {

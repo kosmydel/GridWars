@@ -44,7 +44,7 @@ public class GluttonBotPRO5_T_tuned2 implements PlayerBot {
     UniverseView universeView;
     public GluttonBotPRO5_T_tuned2()
     {
-        this(75,
+        this(120,
                 0.75,
                 1.2,
                 13,

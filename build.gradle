@@ -18,12 +18,12 @@ sourceCompatibility = JavaVersion.VERSION_11
 jar {
     from sourceSets.main.java
 
-    archiveName = "gridwars-bot.jar"
+    archiveName = "gridwars-bot-worse.jar"
 
     manifest {
         attributes(
             // TODO specify the fully qualified class name of your bot here
-            'Bot-Class-Name': 'gridwars.starter.GluttonBotPRO5_T_tuned',
+            'Bot-Class-Name': 'gridwars.starter.GluttonBotPRO5_T_tuned2',
         )
     }
 }

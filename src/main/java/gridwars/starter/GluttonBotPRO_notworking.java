@@ -4,7 +4,6 @@ import cern.ais.gridwars.api.Coordinates;
 import cern.ais.gridwars.api.UniverseView;
 import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
-import com.sun.source.tree.Tree;
 
 import java.util.*;
 //Util.getExpansionDirections(universeView, cell);
@@ -13,7 +12,7 @@ import java.util.*;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBotPRO_notworking implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -43,21 +42,27 @@ public class GluttonBot implements PlayerBot {
 
     Random r = new Random(42);
     UniverseView universeView;
-    public GluttonBot()
+    public GluttonBotPRO_notworking()
     {
-        this(200,
+        this(100,
                 1.0,
                 4.0,
                 30,
                 150,
                 1);
+//        this(140,
+//                0.5,
+//                1.0,
+//                10,
+//                125,
+//                1);
     }
-    public GluttonBot(int strategy_change,
-                      double denominator_value,
-                      double linear_transfer_denominator,
-                      int linear_transfer_population_threshold,
-                      int linear_transfer_turn_threshold,
-                      int bfs_gravity_increment)
+    public GluttonBotPRO_notworking(int strategy_change,
+                                    double denominator_value,
+                                    double linear_transfer_denominator,
+                                    int linear_transfer_population_threshold,
+                                    int linear_transfer_turn_threshold,
+                                    int bfs_gravity_increment)
     {
         STRATEGY_CHANGE = strategy_change;
         DENOMINATOR_VALUE = denominator_value;
@@ -148,7 +153,7 @@ public class GluttonBot implements PlayerBot {
         queue.add(universeView.getCoordinates(i, j));
         queue2.add(universeView.getCoordinates(i, j));
         visited[i][j] = true;
-        distanceFromCenter[i][j] = 200;
+        distanceFromCenter[i][j] = 1;
 
         while (!queue.isEmpty()) {
             Coordinates p = queue.poll();
@@ -161,11 +166,11 @@ public class GluttonBot implements PlayerBot {
                 int x = neighbour.getX();
                 int y = neighbour.getY();
                 if (!visited[x][y]) {
-                    if(!isEmpty && isMine) {
+                    if(isMine && !isEmpty) {
                         queue.add(neighbour);
                         queue2.add(neighbour);
                         visited[x][y] = true;
-                        distanceFromCenter[x][y] = distanceFromCenter[p.getX()][p.getY()] - 1;
+                        distanceFromCenter[x][y] = distanceFromCenter[p.getX()][p.getY()] + 1;
                     }
                 }
             }
@@ -173,73 +178,45 @@ public class GluttonBot implements PlayerBot {
 
         while (!queue2.isEmpty()) {
             Coordinates p = queue2.poll();
+//            var okDirections = new ArrayList<MovementCommand.Direction>();
+            TreeMap okDirections2 = new TreeMap<Integer, MovementCommand.Direction>();
 
-            if(gravity[p.getX()][p.getY()] > 6) {
-                continue;
-            }
-            var okDirections = new ArrayList<MovementCommand.Direction>();
-
-            // Find correct neighbours
-            int maxNeighbourPopulation = 0;
             for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
                 Coordinates neighbour = p.getNeighbour(dir);
 
                 boolean isMine = universeView.belongsToMe(neighbour);
                 boolean isEmpty = universeView.isEmpty(neighbour);
-                int neighbourPopulation = universeView.getPopulation(neighbour);
 
                 int x = neighbour.getX();
                 int y = neighbour.getY();
+//                int alreadyAdded = movedPopulation[x][y];
                 int alreadyAdded = universeView.getPopulation(x, y);
-                maxNeighbourPopulation = Math.max(maxNeighbourPopulation, neighbourPopulation);
-                if(distanceFromCenter[x][y] < distanceFromCenter[p.getX()][p.getY()]) {
-                    okDirections.add(dir);
+                if(isEmpty || distanceFromCenter[x][y] > distanceFromCenter[p.getX()][p.getY()]) {
+//                    okDirections.add(dir);
+                    okDirections2.put(alreadyAdded, dir);
                 }
             }
+
             int toMovePopulation = Math.min(universeView.getPopulation(p) + movedPopulation[p.getX()][p.getY()] - 5, universeView.getPopulation(p));
-
-            // Divide our population to neighbours that each of them has maximum
-            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-                Coordinates neighbour = p.getNeighbour(dir);
-
-                int x = neighbour.getX();
-                int y = neighbour.getY();
-
-                boolean isMine = universeView.belongsToMe(neighbour);
-                boolean isEmpty = universeView.isEmpty(neighbour);
-                int totalNeighbourPopulation = universeView.getPopulation(neighbour) + movedPopulation[neighbour.getX()][neighbour.getY()];
-
-                if(distanceFromCenter[x][y] < distanceFromCenter[p.getX()][p.getY()]) {
-                    int toMove = Math.min(maxNeighbourPopulation - totalNeighbourPopulation, toMovePopulation);
-                    if(toMove > 0) {
-                        toMovePopulation -= toMove;
-                        move(commandList, p, dir, toMove);
-                    }
-                }
-            }
 
             boolean doneSomething = true;
             while (toMovePopulation > 0 && doneSomething) {
                 doneSomething = false;
-                Collections.shuffle(okDirections);
-                for (int c = 0; c < okDirections.size(); c++) {
-                    MovementCommand.Direction dir = okDirections.get(0);
+//                Collections.shuffle(okDirections);
+//                for (int c = 0; c < okDirections.size(); c++) {
+                for (int c = 0; c < okDirections2.size(); c++) {
+                    MovementCommand.Direction dir = (MovementCommand.Direction) okDirections2.pollFirstEntry().getValue();
 
-                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - c + 1), universeView.getPopulation(p));
+                    int movePopulation = Math.min(toMovePopulation / (okDirections2.size() - c + 1), universeView.getPopulation(p));
 
                     if (movePopulation > 0) {
                         toMovePopulation -= movePopulation;
                         doneSomething = true;
                         move(commandList, p, dir, movePopulation);
-                        okDirections.remove(0);
                     }
                 }
             }
         }
-    }
-
-    public void calculateDistanceFromCenter(UniverseView universeView) {
-
     }
 
     public void strategy1(UniverseView universeView, List<MovementCommand> commandList) {
@@ -432,13 +409,5 @@ public class GluttonBot implements PlayerBot {
             }
             // TODO: sprawdzic podwyzszanie z drugiej strony
         }
-    }
-
-    public int calculateDistance(Coordinates c1, Coordinates c2) {
-        int x1 = c1.getX();
-        int y1 = c1.getY();
-        int x2 = c2.getX();
-        int y2 = c2.getY();
-        return (int) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 }

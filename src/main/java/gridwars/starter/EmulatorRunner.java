@@ -10,7 +10,7 @@ public class EmulatorRunner {
 
     public static void main(String[] args) {
 //        Emulator.playMatch(new ExpandBot(), new SquirrelBot());
-        Emulator.playMatch(new GluttonBot(), new GluttonBotPRO5());
+        Emulator.playMatch(new GluttonBot(), new GluttonBotPRO6_T());
 //        Emulator.playMatch(new GluttonBot_WorkingGravity5(), new GluttonBot());
     }
 }

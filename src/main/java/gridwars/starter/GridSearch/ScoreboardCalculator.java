@@ -15,11 +15,8 @@ public class ScoreboardCalculator {
         List<Supplier<? extends PlayerBot>> list = List.of(
 //                () -> new GluttonBot(115, 1.0),
                 GluttonBot::new,
-                GluttonBotPRO5::new,
-                GluttonBotPRO6::new,
-                GluttonBotPRO6_T::new,
                 GluttonBotPRO5_T::new,
-                SquirrelBot::new
+                GluttonBotPRO5_T_tuned::new
         );
         PlayBotsScoreboard(list, 3);
     }

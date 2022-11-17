@@ -4,9 +4,9 @@ import cern.ais.gridwars.api.Coordinates;
 import cern.ais.gridwars.api.UniverseView;
 import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
-import com.sun.source.tree.Tree;
 
 import java.util.*;
+import java.util.stream.Collectors;
 //Util.getExpansionDirections(universeView, cell);
 
 
@@ -20,7 +20,6 @@ public class GluttonBot implements PlayerBot {
     int[][] comeFrom = new int[50][50];
 
     int[][] gravity = new int[50][50];
-    int[][] distanceFromCenter = new int[50][50];
     boolean[][] visited = new boolean[50][50];
     //    int[][] edgeDistance = new int[50][50];
     int[][] neighboursAmount = new int[50][50];
@@ -45,19 +44,19 @@ public class GluttonBot implements PlayerBot {
     UniverseView universeView;
     public GluttonBot()
     {
-        this(200,
+        this(80,
                 1.0,
                 4.0,
-                30,
+                20,
                 150,
                 1);
     }
     public GluttonBot(int strategy_change,
-                      double denominator_value,
-                      double linear_transfer_denominator,
-                      int linear_transfer_population_threshold,
-                      int linear_transfer_turn_threshold,
-                      int bfs_gravity_increment)
+                            double denominator_value,
+                            double linear_transfer_denominator,
+                            int linear_transfer_population_threshold,
+                            int linear_transfer_turn_threshold,
+                            int bfs_gravity_increment)
     {
         STRATEGY_CHANGE = strategy_change;
         DENOMINATOR_VALUE = denominator_value;
@@ -75,7 +74,6 @@ public class GluttonBot implements PlayerBot {
             currentTurn = universeView.getCurrentTurn();
             generateNeighboursAmount(universeView);
             generateEnemiesAmount(universeView);
-            generateGravityMap(universeView);
             movedPopulation = new int[50][50];
 
             if (startingPosition == null) {
@@ -137,10 +135,22 @@ public class GluttonBot implements PlayerBot {
     }
 
     public void strategy0(UniverseView universeView, List<MovementCommand> commandList) {
+        int[][] nextState = new int[universeView.getUniverseSize()][universeView.getUniverseSize()];
+        for(int x = 0;x<universeView.getUniverseSize();x++)
+        {
+            for(int y = 0; y< universeView.getUniverseSize(); y++)
+            {
+                if(universeView.belongsToMe(x, y))
+                    nextState[x][y] = universeView.getPopulation(x, y);
+                else
+                    nextState[x][y] = -universeView.getPopulation(x,y);
+            }
+        }
+
         LinkedList<Coordinates> queue = new LinkedList<>();
         LinkedList<Coordinates> queue2 = new LinkedList<>();
         visited = new boolean[50][50];
-        distanceFromCenter = new int[50][50];
+        gravity = new int[50][50];
 
         int i = startingPosition.getX();
         int j = startingPosition.getY();
@@ -148,7 +158,7 @@ public class GluttonBot implements PlayerBot {
         queue.add(universeView.getCoordinates(i, j));
         queue2.add(universeView.getCoordinates(i, j));
         visited[i][j] = true;
-        distanceFromCenter[i][j] = 200;
+        gravity[i][j] = 1;
 
         while (!queue.isEmpty()) {
             Coordinates p = queue.poll();
@@ -161,85 +171,80 @@ public class GluttonBot implements PlayerBot {
                 int x = neighbour.getX();
                 int y = neighbour.getY();
                 if (!visited[x][y]) {
-                    if(!isEmpty && isMine) {
+                    if(isMine && !isEmpty) {
                         queue.add(neighbour);
                         queue2.add(neighbour);
                         visited[x][y] = true;
-                        distanceFromCenter[x][y] = distanceFromCenter[p.getX()][p.getY()] - 1;
+                        gravity[x][y] = gravity[p.getX()][p.getY()] + 1;
                     }
+//                    if(isEmpty) {
+//                        queue.add(neighbour);
+//                        visited[x][y] = true;
+//                        gravity[x][y] = gravity[p.getX()][p.getY()] + 1;
+//                    }
                 }
             }
         }
 
         while (!queue2.isEmpty()) {
             Coordinates p = queue2.poll();
-
-            if(gravity[p.getX()][p.getY()] > 6) {
-                continue;
-            }
             var okDirections = new ArrayList<MovementCommand.Direction>();
 
-            // Find correct neighbours
-            int maxNeighbourPopulation = 0;
             for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
                 Coordinates neighbour = p.getNeighbour(dir);
 
                 boolean isMine = universeView.belongsToMe(neighbour);
                 boolean isEmpty = universeView.isEmpty(neighbour);
-                int neighbourPopulation = universeView.getPopulation(neighbour);
 
                 int x = neighbour.getX();
                 int y = neighbour.getY();
-                int alreadyAdded = universeView.getPopulation(x, y);
-                maxNeighbourPopulation = Math.max(maxNeighbourPopulation, neighbourPopulation);
-                if(distanceFromCenter[x][y] < distanceFromCenter[p.getX()][p.getY()]) {
+                if(isEmpty || gravity[x][y] > gravity[p.getX()][p.getY()]) {
                     okDirections.add(dir);
                 }
             }
+
+            Collections.shuffle(okDirections);
             int toMovePopulation = Math.min(universeView.getPopulation(p) + movedPopulation[p.getX()][p.getY()] - 5, universeView.getPopulation(p));
-
-            // Divide our population to neighbours that each of them has maximum
-            for (MovementCommand.Direction dir : MovementCommand.Direction.values()) {
-                Coordinates neighbour = p.getNeighbour(dir);
-
-                int x = neighbour.getX();
-                int y = neighbour.getY();
-
-                boolean isMine = universeView.belongsToMe(neighbour);
-                boolean isEmpty = universeView.isEmpty(neighbour);
-                int totalNeighbourPopulation = universeView.getPopulation(neighbour) + movedPopulation[neighbour.getX()][neighbour.getY()];
-
-                if(distanceFromCenter[x][y] < distanceFromCenter[p.getX()][p.getY()]) {
-                    int toMove = Math.min(maxNeighbourPopulation - totalNeighbourPopulation, toMovePopulation);
-                    if(toMove > 0) {
-                        toMovePopulation -= toMove;
-                        move(commandList, p, dir, toMove);
-                    }
+            int maxInNeighbors = okDirections.stream()
+                    .mapToInt(dir -> nextState[p.getNeighbour(dir).getX()][p.getNeighbour(dir).getY()])
+                    .max()
+                    .orElse(0);
+            Map<MovementCommand.Direction,Integer> missing = okDirections.stream()
+                    .collect(Collectors.toMap(
+                            dir-> dir,
+                            dir -> maxInNeighbors - nextState[p.getNeighbour(dir).getX()][p.getNeighbour(dir).getY()]));
+            while (toMovePopulation > 0 && missing.values().stream().mapToInt(x -> x).sum() > 0)
+            {
+                List<MovementCommand.Direction> directions = new LinkedList<>(okDirections);
+                directions.sort(Comparator.comparingInt(missing::get).reversed());
+                for(MovementCommand.Direction dir : directions)
+                {
+                    int toMove = Math.min(toMovePopulation, missing.get(dir));
+                    nextState[p.getX()][p.getY()] -= toMove;
+                    nextState[p.getNeighbour(dir).getX()][p.getNeighbour(dir).getY()] += toMove;
+                    move(commandList, p, dir, toMove);
+                    toMovePopulation -= toMove;
+                    missing.put(dir, missing.get(dir) - toMove);
                 }
             }
 
             boolean doneSomething = true;
             while (toMovePopulation > 0 && doneSomething) {
                 doneSomething = false;
-                Collections.shuffle(okDirections);
                 for (int c = 0; c < okDirections.size(); c++) {
-                    MovementCommand.Direction dir = okDirections.get(0);
+                    MovementCommand.Direction dir = okDirections.get(c);
 
-                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - c + 1), universeView.getPopulation(p));
+                    int movePopulation = Math.min(toMovePopulation / (okDirections.size() - c), universeView.getPopulation(p));
 
                     if (movePopulation > 0) {
                         toMovePopulation -= movePopulation;
                         doneSomething = true;
                         move(commandList, p, dir, movePopulation);
-                        okDirections.remove(0);
                     }
                 }
             }
         }
-    }
-
-    public void calculateDistanceFromCenter(UniverseView universeView) {
-
+        boolean a = true;
     }
 
     public void strategy1(UniverseView universeView, List<MovementCommand> commandList) {
@@ -290,6 +295,8 @@ public class GluttonBot implements PlayerBot {
 
     public void strategy2(UniverseView universeView, List<MovementCommand> commandList) {
         List<Coordinates> myCells = universeView.getMyCells();
+        generateGravityMap(universeView);
+
         for (Coordinates cell : myCells) {
             int x = cell.getX();
             int y = cell.getY();
@@ -420,7 +427,6 @@ public class GluttonBot implements PlayerBot {
             }
         }
 
-        if(currentTurn < LINEAR_TRANSFER_TURN_THRESHOLD) return;
 
         for(Coordinates cell : universeView.getMyCells()) {
             int i = cell.getX();
@@ -430,15 +436,10 @@ public class GluttonBot implements PlayerBot {
             if (population < LINEAR_TRANSFER_POPULATION_THRESHOLD) {
                 gravity[i][j] -= population / LINEAR_TRANSFER_DENOMINATOR;
             }
-            // TODO: sprawdzic podwyzszanie z drugiej strony
-        }
-    }
 
-    public int calculateDistance(Coordinates c1, Coordinates c2) {
-        int x1 = c1.getX();
-        int y1 = c1.getY();
-        int x2 = c2.getX();
-        int y2 = c2.getY();
-        return (int) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+            if (population > 50) {
+                gravity[i][j] += population / 10;
+            }
+        }
     }
 }

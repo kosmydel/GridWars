@@ -5,3 +5,10 @@ GluttonBotPRO5_T
 [LINEAR_TRANSFER_POPULATION_THRESHOLD]=10
 [LINEAR_TRANSFER_DENOMINATOR]=1.0
 [DENOMINATOR_VALUE]=0.75
+
+        this(75,
+                0.75,
+                1.0,
+                10,
+                100,
+                1);

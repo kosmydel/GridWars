@@ -42,6 +42,11 @@ task emulator(type: JavaExec){
     classpath = sourceSets.main.runtimeClasspath
 }
 
+task gridsearch(type: JavaExec){
+    main = "gridwars.starter.GridSearch.GridSearch"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 
 
 dependencies {

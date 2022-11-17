@@ -87,7 +87,7 @@ public class GluttonBotPRO5_T implements PlayerBot {
                 }
             }
             int size = 5;
-            if(currentTurn < 20) {
+            if(currentTurn < 20 && false) {
                 System.out.println("---- turn ---- " + currentTurn);
                 for(int i = (startingPosition.getX() - size + 200) % 50; i < (startingPosition.getX() + size + 200)%50; i++){
                     for(int j = (startingPosition.getY() - size + 200)%50; j < (startingPosition.getY() + size + 200)%50; j++) {

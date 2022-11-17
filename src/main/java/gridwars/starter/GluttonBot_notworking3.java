@@ -4,7 +4,6 @@ import cern.ais.gridwars.api.Coordinates;
 import cern.ais.gridwars.api.UniverseView;
 import cern.ais.gridwars.api.bot.PlayerBot;
 import cern.ais.gridwars.api.command.MovementCommand;
-import com.sun.source.tree.Tree;
 
 import java.util.*;
 //Util.getExpansionDirections(universeView, cell);
@@ -13,7 +12,7 @@ import java.util.*;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBot implements PlayerBot {
+public class GluttonBot_notworking3 implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -43,7 +42,7 @@ public class GluttonBot implements PlayerBot {
 
     Random r = new Random(42);
     UniverseView universeView;
-    public GluttonBot()
+    public GluttonBot_notworking3()
     {
         this(200,
                 1.0,
@@ -52,12 +51,12 @@ public class GluttonBot implements PlayerBot {
                 150,
                 1);
     }
-    public GluttonBot(int strategy_change,
-                      double denominator_value,
-                      double linear_transfer_denominator,
-                      int linear_transfer_population_threshold,
-                      int linear_transfer_turn_threshold,
-                      int bfs_gravity_increment)
+    public GluttonBot_notworking3(int strategy_change,
+                                  double denominator_value,
+                                  double linear_transfer_denominator,
+                                  int linear_transfer_population_threshold,
+                                  int linear_transfer_turn_threshold,
+                                  int bfs_gravity_increment)
     {
         STRATEGY_CHANGE = strategy_change;
         DENOMINATOR_VALUE = denominator_value;

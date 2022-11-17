@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Simple bot that expands into all directions if there is a cell that does not belong to the bot
  */
-public class GluttonBotPRO5_T_tuned implements PlayerBot {
+public class GluttonBotPRO5_T_tuned2 implements PlayerBot {
     Coordinates startingPosition = null;
 
     int[][] firstComeFrom = new int[50][50];
@@ -42,21 +42,21 @@ public class GluttonBotPRO5_T_tuned implements PlayerBot {
 
     Random r = new Random(42);
     UniverseView universeView;
-    public GluttonBotPRO5_T_tuned()
+    public GluttonBotPRO5_T_tuned2()
     {
         this(75,
                 0.75,
-                1.0,
-                10,
-                100,
+                1.2,
+                13,
+                90,
                 1);
     }
-    public GluttonBotPRO5_T_tuned(int strategy_change,
-                                  double denominator_value,
-                                  double linear_transfer_denominator,
-                                  int linear_transfer_population_threshold,
-                                  int linear_transfer_turn_threshold,
-                                  int bfs_gravity_increment)
+    public GluttonBotPRO5_T_tuned2(int strategy_change,
+                                   double denominator_value,
+                                   double linear_transfer_denominator,
+                                   int linear_transfer_population_threshold,
+                                   int linear_transfer_turn_threshold,
+                                   int bfs_gravity_increment)
     {
         STRATEGY_CHANGE = strategy_change;
         DENOMINATOR_VALUE = denominator_value;

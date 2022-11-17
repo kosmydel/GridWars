@@ -40,6 +40,8 @@ public class GluttonBot implements PlayerBot {
 
     private final int BFS_GRAVITY_INCREMENT;
 
+    private int wantedPopulation = 5;
+
     Random r = new Random(42);
     UniverseView universeView;
     public GluttonBot()
@@ -78,6 +80,12 @@ public class GluttonBot implements PlayerBot {
 
             if (startingPosition == null) {
                 startingPosition = universeView.getMyCells().get(0);
+            }
+
+            if(currentTurn > 50 && currentTurn < 100){
+                wantedPopulation = 50;
+            } else if(currentTurn > 100) {
+                wantedPopulation = 90;
             }
 
             universe = new int[50][50];
@@ -420,10 +428,10 @@ public class GluttonBot implements PlayerBot {
         }
 
 
-        int maxGravityValue = Integer.MIN_VALUE;
+
         for (int i = 0; i < 50; i++) {
             for (int j = 0; j < 50; j++) {
-                maxGravityValue = Math.max(maxGravityValue, gravity[i][j]);
+                gravity[i][j] += (universe[i][j] - wantedPopulation) / 50;
             }
         }
 
@@ -435,10 +443,6 @@ public class GluttonBot implements PlayerBot {
             int population = universeView.getPopulation(universeView.getCoordinates(i, j));
             if (population < LINEAR_TRANSFER_POPULATION_THRESHOLD) {
                 gravity[i][j] -= population / LINEAR_TRANSFER_DENOMINATOR;
-            }
-
-            if (population > 50) {
-                gravity[i][j] += population / 10;
             }
         }
     }

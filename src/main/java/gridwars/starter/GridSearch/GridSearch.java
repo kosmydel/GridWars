@@ -19,11 +19,11 @@ public class GridSearch {
 
     public static void main(String[] args) {
         var hyper = Map.of(
-                "STRATEGY_CHANGE", List.of((Object)75, 100, 125),
-                "DENOMINATOR_VALUE", List.of((Object) 0.3, 0.5, 0.75),
-                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object)1.0, 1.5),
-                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)5, 10, 15),
-                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)100, 110, 120),
+                "STRATEGY_CHANGE", List.of((Object)50, 75, 100),
+                "DENOMINATOR_VALUE", List.of((Object) 0.75, 1.0, 1.25),
+                "LINEAR_TRANSFER_DENOMINATOR", List.of((Object)0.8, 1.0, 1.2),
+                "LINEAR_TRANSFER_POPULATION_THRESHOLD", List.of((Object)8, 10, 13),
+                "LINEAR_TRANSFER_TURN_THRESHOLD", List.of((Object)90, 100, 110),
                 "BFS_GRAVITY_INCREMENT", List.of((Object)1)
         );
         var result = run(hyper,

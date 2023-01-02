@@ -16,10 +16,9 @@ public class ScoreboardCalculator {
 //                () -> new GluttonBot(115, 1.0),
 //                GluttonBot::new,
 //                GluttonBotPRO5_T::new,
-                GluttonBotPRO5_T_tuned::new,
                 GluttonBotPRO5_T_tuned2::new
         );
-        PlayBotsScoreboard(list, 7);
+        PlayBotsScoreboard(list, 10);
     }
     static class ParalellResult{
         public String blueBotName;

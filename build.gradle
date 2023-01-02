@@ -18,7 +18,7 @@ sourceCompatibility = JavaVersion.VERSION_11
 jar {
     from sourceSets.main.java
 
-    archiveName = "gridwars-bot-worse.jar"
+    archiveName = "gridwars-bot.jar"
 
     manifest {
         attributes(

@@ -1,68 +1,40 @@
-<pre>
-         .    .        .      .             . .     .        .          .          .
-  .    .          .                 .                    .                .    .
-           .               A long time ago in a galaxy far, far away...   .
-    *         .               .           .               .        .             .
-              .      .            .                 .                         +      .
-      .   .      .         .         .   . :::::+::::...      .          .         .
-   .          .         .      .    ..::.:::+++++:::+++++:+::.    .     .
-                                 .:.  ..:+:..+|||+..::|+|+||++|:.             .     .
-                     .   .    :::....:::::::::++||||O||O#OO|OOO|+|:.    .
-     .   .      .      .    .:..:..::+||OO#|#|OOO+|O||####OO###O+:+|+               .
-                          .:...:+||O####O##||+|OO|||O#####O#O||OO|++||:     .    .
-.          .             ..::||+++|+++++|+::|+++++O#O|OO|||+++..:OOOOO|+  .         .
-   .   .      .   .     +++||++:.:++:..+#|. ::::++|+++||++O##O+:.++|||#O+    .
-         .           . ++++++++...:+:+:.:+: ::..+|OO++O|########|++++||##+            .
-.          .       .  :::+++|O+||+::++++:::+:::+++::+|+O###########OO|:+OO       .  .
-              .       +:+++|OO+|||O:+:::::.. .||O#OOO||O||#@###@######:+|O|  .
-          .          ::+:++|+|O+|||++|++|:::+O#######O######O@############O
-     +             . ++++: .+OO###O++++++|OO++|O#@@@####@##################+         .
-               .     ::::::::::::::::::::++|O+..+#|O@@@@#@###O|O#O##@#OO####     .
-          .        . :. .:.:. .:.:.: +.::::::::  . +#:#@:#@@@#O||O#O@:###:#| .      .
-                                    `. .:.:.:.:. . :.:.:%::%%%:::::%::::%:::
-         .      .                                      `.:.:.:.:   :.:.:.:.  .   .
-                    .                                                                .
-  .            .
-         .          .                                                       .   .
- .                                                                                    .
-             .        .                                                           .
-             .     .                                                           .    *  .
-    .      .     .                                                        .
-                       .   A terrible civil war burns throughout the  .        .     .
-                          galaxy: a rag-tag group of freedom fighters   .  .
-              .       .  has risen from beneath the dark shadow of the            .
-         .        .     evil monster the Galactic Empire has become.                  .
-  .        .             Imperial  forces  have  instituted  a reign of   .      .
-        *             terror,  and every  weapon in its arsenal has  been
-   .               . turned upon the Rebels  and  their  allies:  tyranny, .   .
-            .       oppression, vast fleets, overwhelming armies, and fear.        .  .
-      .  .      .  Fear  keeps  the  individual systems in line,  and is the   .
-                  prime motivator of the New Order.             .
-   .        .      Outnumbered and outgunned,  the Rebellion burns across the   .    .
-         .      vast reaches of space and a thousand-thousand worlds, with only     .
-             . their great courage - and the mystical power known as the Force -
-   .         flaming a fire of hope.        .          .    .    .            .      .
-               .               ..       .       .   .             .           +          .
-                     .              .       .              +     .      .    .          .
-.        .               .       .     .            .        .                 .          .
-   .           .        .                     .        .            .          .     .      .
-             .               .    .          .              .   .         .
-    _______ .______       __   _______     ____    __    ____  ___      .______      +   _______.
-   /  _____||   _  \   . |  | |       \    \   \ ./  \  /   / /   \     |   _  \        /       |
-  |  |  __  |  |_)  |    |  | |  .--.  |  . \   \/    \/   / /  ^  \  . |  |_)  |      |   (----`
-  |  | |_ | |      / .   |  | |  |  |  |     \            / /  /_\  \   |      /   .    \   \
-  |  |__| | |  |\  \----.|  | |  '--'  |      \    /\    / /  _____  \  |  |\  \----.----)   | .
-   \______| | _| `._____||__| |_______/   .    \__/  \__/ /__/     \__\ | _| `._____|_______/    .
-     .             .             .         .               .                 .
-.        .               .       .     .            .    .       *        .        .        .
+# GridWars Hackathon 
+### CERN Winter Campus 2022, AGH UST, Cracow
+The winning program of 2022 edition of CERN GridWars Hackathon.
 
-                                         Episode VI
+## Idea
+In order to win the game we used several techniques. We prepared two separate strategies: 
+- to cover the most of the map and gain as many units as it is possible,
+- to attack the enemy.
 
-                            T H E   G R I D   A D V E N T U R E
-</pre>
+Another important thing was to find optimal parameters for our algorithm. 
+We created gui-less simulator and then used GridSearch to find the parameters.
+Before this optimization our bot was only in top 3.
 
-## GridWars Starter Project
+**Fun fact:** we played over 100.000 games to find the best parameters. It took whole night to do that.
+
+Our algorithm also uses some graph algorithms, mostly BFS, and its combinations.
+
+## Ranking
+![img.png](images/img.png)
+Unfortunately, screenshot was made several weeks after competition. Originally, it has 2 loses.
+
+## Screenshots
+**Game with 2nd place bot**
+
+(TeamPierogi, guys from Jagiellonian University :))
+![img_1.png](images/img_1.png)
+
+
+**Game with 3rd place bot**
+
+(GolemGolemGolem, guys from Warsaw University of Technology :))
+![img_2.png](images/img_2.png)
 ---
+
+# Using project
+## GridWars Starter Project
+
 This starter project provides everything to get you going with the development of your own bot for the GridWars coding competition.
 
 Please refer to the [getting started page](https://gridwars.cern.ch/docs/getting-started) available online for a comprehensive guide. You can also refer to the PDF slides shipped in this starter project that explains the game mechanics and some rules.

@@ -1,23 +1,23 @@
 # GridWars Hackathon 
 ### CERN Winter Campus 2022, AGH UST, Cracow
-The winning program of 2022 edition of CERN GridWars Hackathon.
+The winning program of the 2022 edition of the CERN GridWars Hackathon.
 
 ## Idea
 In order to win the game we used several techniques. We prepared two separate strategies: 
-- to cover the most of the map and gain as many units as it is possible,
+- to cover most of the map and gain as many units as it is possible,
 - to attack the enemy.
 
 Another important thing was to find optimal parameters for our algorithm. 
-We created gui-less simulator and then used GridSearch to find the parameters.
-Before this optimization our bot was only in top 3.
+We created a gui-less simulator and then used GridSearch to find the parameters.
+Before this optimization, our bot was only in the top 3.
 
-**Fun fact:** we played over 100.000 games to find the best parameters. It took whole night to do that.
+**Fun fact:** We ran over 100.000 games to find the best parameters. It took a whole night to do that.
 
 Our algorithm also uses some graph algorithms, mostly BFS, and its combinations.
 
 ## Ranking
 ![img.png](images/img.png)
-Unfortunately, screenshot was made several weeks after competition. Originally, it has 2 loses.
+Unfortunately, the screenshot was made several weeks after the competition. Originally, it had 2 loses.
 
 ## Screenshots
 **Game with 2nd place bot**

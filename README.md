@@ -8,7 +8,7 @@ In order to win the game we used several techniques. We prepared two separate st
 - to attack the enemy.
 
 Another important thing was to find optimal parameters for our algorithm. 
-We created a gui-less simulator and then used GridSearch to find the parameters.
+We created a GUI-less simulator and then used GridSearch to find the parameters.
 Before this optimization, our bot was only in the top 3.
 
 **Fun fact:** We ran over 100.000 games to find the best parameters. It took a whole night to do that.
@@ -17,18 +17,20 @@ Our algorithm also uses some graph algorithms, mostly BFS, and its combinations.
 
 ## Ranking
 ![img.png](images/img.png)
-Unfortunately, the screenshot was made several weeks after the competition. Originally, it had 2 loses.
+Unfortunately, the screenshot was made several weeks after the competition. Originally, it had 2 losses.
 
 ## Screenshots
 **Game with 2nd place bot**
 
-(TeamPierogi, guys from Jagiellonian University :))
+TeamPierogi, guys from Jagiellonian University :) 
+
 ![img_1.png](images/img_1.png)
 
 
 **Game with 3rd place bot**
 
-(GolemGolemGolem, guys from Warsaw University of Technology :))
+GolemGolemGolem, guys from Warsaw University of Technology :)
+
 ![img_2.png](images/img_2.png)
 ---
 
